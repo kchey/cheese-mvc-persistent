@@ -1,7 +1,10 @@
 package org.launchcode.controllers;
 
 import org.launchcode.models.Category;
+import org.launchcode.models.Cheese;
+import org.launchcode.models.Menu;
 import org.launchcode.models.data.CategoryDao;
+import org.launchcode.models.data.CheeseDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,59 +12,85 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 
+
 @Controller
-@RequestMapping("category")
+@RequestMapping("cheese")
+public class CheeseController {
 
-public class CategoryController {
-
+    @Autowired
+    private CheeseDao cheeseDao;
 
     @Autowired
     private CategoryDao categoryDao;
 
-    @RequestMapping(value="")
+    //needed for access to delete cheese from menu
+    @Autowired
+    private CategoryDao menuDao;
+
+
+    // Request path: /cheese
+    @RequestMapping(value = "")
     public String index(Model model) {
 
-            model.addAttribute("title", "Categories");
-            model.addAttribute("categories", categoryDao.findAll());
+        model.addAttribute("cheeses", cheeseDao.findAll());
+        model.addAttribute("title", "My Cheeses");
+        model.addAttribute("category", cheeseDao);
 
-            return "category/index";
-        }
+        return "cheese/index";
+    }
+
 
     @RequestMapping(value = "add", method = RequestMethod.GET)
-        public String add() {
-            return add();
+    public String displayAddCheeseForm(Model model) {
+        model.addAttribute("title", "Add Cheese");
+        model.addAttribute(new Cheese());
+        model.addAttribute("categories", categoryDao.findAll());
+
+        return "cheese/add";
+    }
+
+
+    @RequestMapping(value = "add", method = RequestMethod.POST)
+    public String processAddCheeseForm(@ModelAttribute  @Valid Cheese newCheese,
+                                       Errors errors, @RequestParam int categoryId, Model model) {
+
+        if (errors.hasErrors()) {
+            model.addAttribute("title", "Add Cheese");
+            return "cheese/add";
         }
+        Category category = categoryDao.findOne(categoryId);
+        newCheese.setCategory(category);
+        cheeseDao.save(newCheese);
 
-    @RequestMapping(value = "add", method = RequestMethod.GET)
-        public String add(Model model) {
+        return "redirect:";
+    }
 
+    @RequestMapping(value = "remove", method = RequestMethod.GET)
+    public String displayRemoveCheeseForm(Model model) {
+        model.addAttribute("cheeses", cheeseDao.findAll());
+        model.addAttribute("title", "Remove Cheese");
 
-            model.addAttribute(new Category());
-            model.addAttribute("title", "Add Category");
+        return "cheese/remove";
+    }
 
-            return "category/add";
+    @RequestMapping(value = "remove", method = RequestMethod.POST)
+    public String processRemoveCheeseForm(@RequestParam int[] cheeseIds) {
+
+        for(int cheeseId : cheeseIds) {
+            Cheese cheese = cheeseDao.findOne(cheeseId);
+
+            //must remove cheese from menu to delete
+            for(Menu menu : cheese.getMenus()) {
+                menu.removeItem(cheese);
+
+            }
+            cheeseDao.delete(cheeseId);
         }
+        return "redirect:";
+    }
 
-        @RequestMapping(value = "add", method = RequestMethod.POST)
-        public String add(Model model, @ModelAttribute @Valid Category
-                category, Errors errors) {
-
-            if (errors.hasErrors()) {
-                //model.addAttribute("title", "Add Category");
-                return "category/add";
-            }
-            else{
-
-
-                categoryDao.save(category);
-                return "redirect:/category";
-            }
-
-    }}
-
-
-
-
+}
