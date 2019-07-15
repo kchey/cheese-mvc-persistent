@@ -33,11 +33,7 @@ public class Menu {
         cheeses.add(item);
     }
 
-    //needed to delete cheese from menu
-
     public void removeItem(Cheese item) { cheeses.remove(item); }
-
-    //getters & setters
 
     public String getName() {
         return name;
