@@ -66,7 +66,7 @@ public class MenuController {
     public String addMenuItem(Model model,@PathVariable int id){
         Menu menu = menuDao.findOne(id);
         Iterable<Cheese> cheeses = cheeseDao.findAll();
-        AddMenuItemForm menuItemForm = new AddMenuItemForm(menu,cheeses);
+        AddMenuItemForm menuItemForm = new AddMenuItemForm();
         if(menu != null){
             model.addAttribute("title","Add item to menu: " + menu.getName());
             model.addAttribute("menuItemForm", menuItemForm);
@@ -89,7 +89,7 @@ public class MenuController {
             return "menu/add-item";
         }
         Cheese cheese = cheeseDao.findOne(menuItemForm.getCheeseId());
-        menu.addMenuItem(cheese);
+       // menu.addMenuItem(cheese);
         menuDao.save(menu);
         return "redirect:/menu/menudetails/"+menu.getId();
     }
