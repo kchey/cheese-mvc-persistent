@@ -14,54 +14,39 @@ import javax.validation.Valid;
 
 @Controller
 @RequestMapping("category")
-
 public class CategoryController {
-
 
     @Autowired
     private CategoryDao categoryDao;
 
-    @RequestMapping(value="")
-    public String index(Model model) {
 
-            model.addAttribute("title", "Categories");
-            model.addAttribute("categories", categoryDao.findAll());
+    @RequestMapping(value ="")
+    public String index(Model model){
 
-            return "category/index";
-        }
+        model.addAttribute("categories", categoryDao.findAll());
+        model.addAttribute("title", "Categories");
 
-    @RequestMapping(value = "add", method = RequestMethod.GET)
-        public String add() {
-            return add();
-        }
-
-    @RequestMapping(value = "add", method = RequestMethod.GET)
-        public String add(Model model) {
+        return "category/index";
+    }
 
 
-            model.addAttribute(new Category());
+    @RequestMapping(value="add", method = RequestMethod.GET)
+    public String displayAddCategory(Model model){
+        model.addAttribute("title", "Add Category");
+        model.addAttribute(new Category());
+
+        return"category/add";
+    }
+
+
+    @RequestMapping(value="add", method = RequestMethod.POST)
+    public String processAddCategory(Model model, @ModelAttribute @Valid Category category, Errors errors){
+        if(errors.hasErrors()){
             model.addAttribute("title", "Add Category");
-
             return "category/add";
         }
 
-        @RequestMapping(value = "add", method = RequestMethod.POST)
-        public String add(Model model, @ModelAttribute @Valid Category
-                category, Errors errors) {
-
-            if (errors.hasErrors()) {
-                //model.addAttribute("title", "Add Category");
-                return "category/add";
-            }
-            else{
-
-
-                categoryDao.save(category);
-                return "redirect:/category";
-            }
-
-    }}
-
-
-
-
+        categoryDao.save(category);
+        return "redirect:";
+    }
+}
